@@ -1,5 +1,8 @@
 import React, { Component } from "react";
-import { setShader, initBuffers, drawScene, createTexture } from "./gl.js";
+import { setShader, initBuffers, drawScene } from "./gl.js";
+import Editor from './Editor'
+
+
 import "./App.css";
 
 const vsSource = `#version 300 es
@@ -19,46 +22,43 @@ const fsSource = `#version 300 es
   void main() {
     mainImage(fragColor, gl_FragCoord.xy);
   }
-  \n
-  `;
+\n
+`;
 
 class App extends Component {
   constructor() {
     super();
     this.ref = React.createRef();
+    this.state = {errors: []};
   }
   componentDidMount() {
     this.canvas = this.ref.current;
-    this.canvas.width = 1280;
-    this.canvas.height = 720;
+    this.canvas.width = 720;
+    this.canvas.height = 480;
     this.canvas.style.backgroundColor = "black";
     this.gl = this.canvas.getContext("webgl2");
-
-    const key = "ftrKwh";
-    const shaderId = "3s23Wt";
-    const url = `https://www.shadertoy.com/api/v1/shaders/${shaderId}?key=${key}`;
-
-    fetch(url)
-      .then(response => response.json())
-      .then(text => this.parseResponse(text.Shader));
-
     this.passes = [];
-    //this.initGl("");
   }
 
   initPass = pass => {
-    const buffers = pass.inputs.filter(input => input.ctype === "buffer");
-    const channels = buffers.map(pass =>"iChannel" + String(pass.channel));
+      this.shaderProgram = setShader(this.gl, vsSource, fsSource + pass);
+      this.setState({errors: []});
 
-    let fsShader = fsSource.split("\n");
-    channels.forEach(channel => {
-      fsShader.splice(3, 0, "uniform sampler2D " + channel + ";\n");
-    });
+      if(typeof this.shaderProgram !== "object") {
+        const split = this.shaderProgram.split(":");
+        const row = Number(split[2]) - fsSource.split("\n").length;
+        const text = split.slice(3).join(" ");
+        this.setState({errors: [{
+          row: row,
+          text: text,
+          type: "error"
+        }]})
 
-    this.shaderProgram = setShader(this.gl, vsSource, fsShader.join("\n") + pass.code);;
-    const channelLocations = channels.map(channel =>this.gl.getUniformLocation(this.shaderProgram, channel));
-    
+        setTimeout(2000, () => this.setState({errors: null}));
+        return;
+      }
 
+      
     this.passes.push({
       screenWidth: 1280,
       screenHeight: 720,
@@ -70,17 +70,11 @@ class App extends Component {
         )
       },
       uniformLocations: {
-        iTime:  this.gl.getUniformLocation(
-          this.shaderProgram,
-          "iTime"
-        ),
+        iTime: this.gl.getUniformLocation(this.shaderProgram, "iTime"),
         resolution: this.gl.getUniformLocation(
           this.shaderProgram,
           "iResolution"
         )
-      },
-      bufferLocations: {
-        ...channelLocations
       }
     });
 
@@ -88,35 +82,41 @@ class App extends Component {
     requestAnimationFrame(this.animate);
   };
 
+  onRun = (value) => {
+    this.passes = [];
+    console.log(value);
+    this.initPass(value);
+  }
+
   animate = () => {
     this.passes.forEach((pass, i) => {
-      if(i < this.passes.length)
-      drawScene(this.gl, pass, this.buffers, this.readBuffer, this.writeBuffer, i === this.passes.length - 1);
-    })
-    
+      drawScene(
+        this.gl,
+        pass,
+        this.buffers,
+        this.readBuffer,
+        this.writeBuffer,
+        i === this.passes.length - 1
+      );
+    });
+
     requestAnimationFrame(this.animate);
   };
 
-  parseResponse = response => {
-    console.log(response)
-    if(response) {
-      this.readBuffer = createTexture(this.gl, 1280, 720);
-      this.writeBuffer = createTexture(this.gl, 1280, 720);
-  
-      response.renderpass.forEach(pass => {
-        this.initPass(pass);
-      })
-    }else {
-      console.log("no api")
-    }
-   
-  };
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <canvas ref={this.ref} />
-        </header>
+        <header className="header" />
+        <div className="container">
+          <div className="canvasContainer">
+            <div>.</div>
+            <div className="boxContainer">
+              <canvas ref={this.ref} />
+            </div>
+          </div>
+
+          <Editor annotations={this.state.errors} onRun={this.onRun}></Editor>
+        </div>
       </div>
     );
   }
