@@ -1,10 +1,17 @@
-import React, { PureComponent } from 'react'
-import './App.css'
-import brace from "brace";
+import React, { PureComponent } from "react";
+import classes from "./App.module.css";
 import AceEditor from "react-ace";
-
+import './Navbar.css'
 import "brace/mode/glsl";
 import "brace/theme/github";
+
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Nav from "react-bootstrap/Nav";
+
+
+import Button from "react-bootstrap/Button";
 
 const startShader = `void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
@@ -17,11 +24,9 @@ const startShader = `void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // Output to screen
     fragColor = vec4(col,1.0);
 }
-`
-
+`;
 
 export default class Editor extends PureComponent {
-
   constructor() {
     super();
 
@@ -29,48 +34,80 @@ export default class Editor extends PureComponent {
     this.ref = React.createRef();
   }
 
-  onChange = (e) => {
+  onChange = e => {
     this.latestValue = e;
-  }
+  };
 
   render() {
+
+    const firstColumnWidth = 2;
+    const rowStyle = {margin: 0, padding: 0};
+
     return (
-        <div className="editorContainer">
-        <div>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-            <button>BUTTON!</button>
-          </div>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Container >
 
-        <div className="boxContainer">
-          <AceEditor
-            mode="glsl"
-            theme="github"
-            onChange={this.onChange}
-            name="editor"
-            editorProps={{ $blockScrolling: true }}
-            class="editor"
-            value={this.latestValue}
-            ref= {this.ref}
-            annotations={this.props.annotations}
-          />
+          <Row style={rowStyle}>
+          <Col xs={firstColumnWidth}></Col>
+            <Col>
+              <Nav variant="tabs" defaultActiveKey="/home">
+                  <Nav.Item>
+                    <Nav.Link >Active</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="link-1">Option 2</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="disabled" disabled>
+                      Disabled
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+                </Col>
+          </Row>
 
-          
-        </div>
-          <div>
-            <button onClick={() => this.props.onRun(this.latestValue)}>RUN!</button>
-            <button>RUN!</button>
-            <button>RUN!</button>
-            <button>RUN!</button>
-            <button>RUN!</button>
-            <button>RUN!</button>
-            <button>RUN!</button>
-          </div>
+          <Row style={rowStyle}>
+            <Col xs={firstColumnWidth} style={{  backgroundColor: "green", ...rowStyle,margin: 3, }}>
+              <div ></div>
+            </Col >
+            <Col style={rowStyle}>
+              <AceEditor
+                mode="glsl"
+                theme="github"
+                onChange={this.onChange}
+                name={classes.editor}
+                editorProps={{ $blockScrolling: true }}
+                class={classes.editor}
+                value={this.latestValue}
+                ref={this.ref}
+                annotations={this.props.annotations}
+                style={{ width: "100%", minHeight: 600 }}
+              />
+            </Col>
+          </Row>
+
+          <Row style={rowStyle}>
+            <Col xs={firstColumnWidth} style={{...rowStyle, margin: 6}}></Col>
+            <Col style={rowStyle}>
+              <div className={classes.buttonGroup}>
+                <Button onClick={() => this.props.onRun(this.latestValue)}>
+                  RUN!
+                </Button>
+                <Button onClick={() => this.props.onRun(this.latestValue)}>
+                  RUN!
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Container>
       </div>
-    )
+    );
   }
 }

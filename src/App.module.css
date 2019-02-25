@@ -1,0 +1,49 @@
+.App {
+  text-align: center;
+  height: 100%;
+}
+
+.buttonGroup {
+  display: flex;
+  width: 100%;
+  margin:6px;
+
+
+  justify-content: space-between;
+}
+
+.header {
+  height: 7.5%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #41454e;
+}
+
+.canvas {
+  border-radius: 0.4em;
+  margin-top: 7.5%;
+}
+
+
+#editor {
+  margin: 3px;
+}
+
+.canvasContainer {
+  width: 100%;
+  height: 100%;
+  background-color: blue;
+}
+
+.boxContainer {
+  width: 100%;
+  height:100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+}

@@ -1,9 +1,17 @@
 import React, { Component } from "react";
 import { setShader, initBuffers, drawScene } from "./gl.js";
-import Editor from './Editor'
+import Editor from "./Editor";
 
 
-import "./App.css";
+import SimpleBar from 'simplebar-react';
+import 'simplebar/dist/simplebar.min.css';
+
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+
+import classes from "./App.module.css";
+import Canvas from "./Canvas";
 
 const vsSource = `#version 300 es
 in vec4 aVertexPosition;
@@ -28,11 +36,11 @@ const fsSource = `#version 300 es
 class App extends Component {
   constructor() {
     super();
-    this.ref = React.createRef();
-    this.state = {errors: []};
+    this.canvasRef = React.createRef();
+    this.state = { errors: [] };
   }
   componentDidMount() {
-    this.canvas = this.ref.current;
+    this.canvas = this.canvasRef.current;
     this.canvas.width = 720;
     this.canvas.height = 480;
     this.canvas.style.backgroundColor = "black";
@@ -41,24 +49,27 @@ class App extends Component {
   }
 
   initPass = pass => {
-      this.shaderProgram = setShader(this.gl, vsSource, fsSource + pass);
-      this.setState({errors: []});
+    this.shaderProgram = setShader(this.gl, vsSource, fsSource + pass);
+    this.setState({ errors: [] });
 
-      if(typeof this.shaderProgram !== "object") {
-        const split = this.shaderProgram.split(":");
-        const row = Number(split[2]) - fsSource.split("\n").length;
-        const text = split.slice(3).join(" ");
-        this.setState({errors: [{
-          row: row,
-          text: text,
-          type: "error"
-        }]})
+    if (typeof this.shaderProgram !== "object") {
+      const split = this.shaderProgram.split(":");
+      const row = Number(split[2]) - fsSource.split("\n").length;
+      const text = split.slice(3).join(" ");
+      this.setState({
+        errors: [
+          {
+            row: row,
+            text: text,
+            type: "error"
+          }
+        ]
+      });
 
-        setTimeout(2000, () => this.setState({errors: null}));
-        return;
-      }
+      setTimeout(2000, () => this.setState({ errors: null }));
+      return;
+    }
 
-      
     this.passes.push({
       screenWidth: 1280,
       screenHeight: 720,
@@ -82,11 +93,10 @@ class App extends Component {
     requestAnimationFrame(this.animate);
   };
 
-  onRun = (value) => {
+  onRun = value => {
     this.passes = [];
-    console.log(value);
     this.initPass(value);
-  }
+  };
 
   animate = () => {
     this.passes.forEach((pass, i) => {
@@ -104,19 +114,31 @@ class App extends Component {
   };
 
   render() {
-    return (
-      <div className="App">
-        <header className="header" />
-        <div className="container">
-          <div className="canvasContainer">
-            <div>.</div>
-            <div className="boxContainer">
-              <canvas ref={this.ref} />
-            </div>
-          </div>
+    const marginTop = "5%";
 
-          <Editor annotations={this.state.errors} onRun={this.onRun}></Editor>
-        </div>
+    return (
+      <div className={classes.App}>
+        <header className={classes.header} >
+          <h1>SHADERline</h1>
+        </header>
+        <Container fluid style={{height: "92.5%", overflow: "hidden"}}>
+          <Row style={{height: "100%"}}> 
+          <SimpleBar  style={{width:"45%", height:"100%"}}>
+            <Col style={{marginTop}}>
+            
+                <Canvas>
+                  <canvas ref={this.canvasRef} className="canvas" />
+                </Canvas>
+              
+            </Col>
+            </SimpleBar>
+
+            <Col style={{marginTop}}>
+              <Editor annotations={this.state.errors} onRun={this.onRun} />
+            </Col>
+          </Row>
+          >
+        </Container>
       </div>
     );
   }
