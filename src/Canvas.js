@@ -1,6 +1,7 @@
 import React, { PureComponent } from "react";
 import classes from "./App.module.css";
 import Comment from "./Comment.js";
+import Comments from "./Comment.js";
 
 export default class Canvas extends PureComponent {
   render() {
@@ -25,9 +26,9 @@ export default class Canvas extends PureComponent {
           </div>
 
           <div
-            style={{ height: 1000, backgroundColor: "blue", marginBottom: 15 }}
+            style={{ height: 1000, backgroundColor: "gray", marginBottom: 15 }}
           >
-            <Comment />
+            <Comments />
           </div>
         </div>
       </div>
